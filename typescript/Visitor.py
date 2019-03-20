@@ -22,6 +22,21 @@ def remap_function(visitor, function_name):
     return update_requirements(visitor, _map[function_name] if function_name in _map else function_name)
 
 
+def remap_type(ast_type):
+    classname = ast_type.__class__.__name__
+    if classname == 'ASTListType':
+        if ast_type.data_type.__class__.__name__ == 'ASTStringType':
+            return 'char**'
+
+    if classname == 'ASTStringType':
+        return 'char*'
+
+    if classname == 'ASTNumberType':
+        return 'int'
+
+    return 'void'
+
+
 class Visitor(object):
 
     def __init__(self):
@@ -59,8 +74,7 @@ class Visitor(object):
             open('typescript/ctemplates/definition.c').read())
 
         return template.render(
-            data_type='int' if ast_node.data_type.__class__.__name__ ==
-            'ASTNumberType' else 'char*',
+            data_type=remap_type(ast_node.data_type),
             key=ast_node.key,
             expr=self.visit(ast_node.value)
         )
