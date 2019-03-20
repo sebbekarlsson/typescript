@@ -6,6 +6,8 @@ from typescript.ast.ASTFunctionCall import ASTFunctionCall
 from typescript.ast.ASTVariable import ASTVariable
 from typescript.ast.ASTListType import ASTListType
 from typescript.ast.ASTFunctionDefinition import ASTFunctionDefinition
+from typescript.ast.ASTNumberType import ASTNumberType
+from typescript.ast.ASTStringType import ASTStringType
 
 
 def get_method(token_type):
@@ -62,8 +64,8 @@ class Parser(object):
 
         return ASTFunctionCall(function_name, args)
 
-
     def parse_function_definition(self):
+        data_type = None
         function_name = self.current_token.value
         self.eat(TokenType.ID)
         self.eat(TokenType.LPAREN)
@@ -82,15 +84,20 @@ class Parser(object):
                 args.append(definition)
 
         self.eat(TokenType.RPAREN)
+
+        if self.current_token.token_type == TokenType.COLON:
+            self.eat(TokenType.COLON)
+            data_type = self.parse_data_type()
+
         self.eat(TokenType.LBRACE)
         statements = self.parse_statement_list()
         self.eat(TokenType.RBRACE)
 
-        return ASTFunctionDefinition(function_name, args, statements)
+        return ASTFunctionDefinition(data_type, function_name, args, statements)
 
     def parse_function_type(self):
         self.eat(TokenType.FUNCTION_TYPE)
-        return self.parse_function_definition() 
+        return self.parse_function_definition()
 
     def parse_variable(self, id_token):
         return ASTVariable(id_token.value)
@@ -109,7 +116,13 @@ class Parser(object):
         return ASTListType(data_type)
 
     def parse_data_type(self):
-        data_type = self.parse_statement()
+        data_type = self.current_token
+        self.eat(data_type.token_type)
+
+        if data_type.token_type == TokenType.NUMBER_TYPE:
+            data_type = ASTNumberType(data_type)
+        elif data_type.token_type == TokenType.STRING_TYPE:
+            data_type = ASTStringType(data_type)
 
         if self.current_token.token_type == TokenType.LBRACKET:
             return self.parse_list_type(data_type)
@@ -130,6 +143,7 @@ class Parser(object):
 
     def parse_definition(self):
         expr = None
+        data_type = None
 
         if self.current_token.token_type == TokenType.LET:
             self.eat(TokenType.LET)
@@ -145,11 +159,14 @@ class Parser(object):
             self.eat(TokenType.EQUALS)
             expr = self.parse_expr()
 
-        return ASTDefinition(data_type=None, key=key, value=expr)
+        return ASTDefinition(data_type=data_type, key=key, value=expr)
 
     def parse_statement(self):
         if self.current_token.token_type in [
-            TokenType.LBRACE, TokenType.RBRACE
+            TokenType.LBRACE,
+            TokenType.RBRACE,
+            TokenType.LBRACKET,
+            TokenType.RBRACKET
         ]:
             return
 

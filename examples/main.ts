@@ -1,3 +1,4 @@
-function main(argc: number, argv: string[]) {
-    print("Hello World");
+function main(argc: number, argv: string[]): number {
+    let name = "John Doe";
+    print(name);
 }
