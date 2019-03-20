@@ -6,8 +6,11 @@ token_map = {
     'RPAREN': ')',
     'LBRACE': '{',
     'RBRACE': '}',
+    'LBRACKET': '[',
+    'RBRACKET': ']',
     'SEMI': ';',
     'COLON': ':',
+    'COMMA': ',',
     'THIS': 'this',
     'NEW': 'new',
     'DOT': '.',
@@ -17,15 +20,16 @@ token_map = {
     'WHILE': 'while',
     'FOR': 'for',
     'LET': 'let',
-    'NUMBER': 'number',
-    'BOOLEAN': 'boolean',
-    'STRING': 'string',
-    'VOID': 'void',
-    'NULL': 'null',
-    'ANY': 'any',
-    'FALSE': 'false',
-    'TRUE': 'true',
-    'FUNCTION': 'function',
+    'NUMBER_TYPE': 'number',
+    'BOOLEAN_TYPE': 'boolean',
+    'STRING_TYPE': 'string',
+    'STRING_VALUE': 'STRING_VALUE',
+    'VOID_TYPE': 'void',
+    'NULL_TYPE': 'null',
+    'ANY_TYPE': 'any',
+    'FALSE_VALUE': 'false',
+    'TRUE_VALUE': 'true',
+    'FUNCTION_TYPE': 'function',
     'EOF': '\0',
     'ID': 'ID',
     'EQUALS': '=',
@@ -34,7 +38,7 @@ token_map = {
 
 
 _TokenType = namedtuple('TokenType', ' '.join(token_map.keys()))
-TokenType = _TokenType(**token_map)
+TokenType = _TokenType(**{k: k for k, v in token_map.items()})
 
 
 def token_type_by_value(value):

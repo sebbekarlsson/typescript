@@ -38,6 +38,15 @@ class Lexer(object):
         else:
             return Token(TokenType.ID, _id)
 
+    def parse_string(self):
+        string = ''
+        self.advance()
+        while self.current_char != '"':
+            string += self.current_char
+            self.advance()
+        self.advance()
+        return Token(TokenType.STRING_VALUE, string)
+
     def get_next_token(self):
         while self.ok():
             if self.should_skip_whitespace():
@@ -45,6 +54,9 @@ class Lexer(object):
 
             if self.current_char.isalnum():
                 return self.parse_id()
+
+            if self.current_char == '"':
+                return self.parse_string()
 
             if self.current_char in token_map.values():
                 token = Token(
