@@ -1,9 +1,13 @@
-from jinja2 import Template
+from jinja2 import Template, Environment, PackageLoader
+
+
+jinja_env = Environment(loader=PackageLoader('typescript', 'ctemplates'))
 
 
 def update_requirements(visitor, keyword):
     _map = {
-        'printf': '<stdio.h>'
+        'printf': '<stdio.h>',
+        'class': '<stdlib.h>'
     }
 
     requirement = _map[keyword] if keyword in _map else None
@@ -35,6 +39,13 @@ def remap_type(ast_type):
         return 'int'
 
     return 'void'
+
+
+jinja_env.globals.update(
+    remap_type=remap_type
+)
+
+
 
 
 class Visitor(object):
@@ -70,13 +81,20 @@ class Visitor(object):
         return '"' + ast_node + '"'
 
     def visit_astdefinition(self, ast_node):
-        template = Template(
-            open('typescript/ctemplates/definition.c').read())
+        template = jinja_env.get_template('definition.c')
+
+        ast_node.value = self.visit(ast_node.value)
+
+        return template.render(definition=ast_node)
+
+    def visit_astclassdefinition(self, ast_node):
+        template = jinja_env.get_template('struct_definition.c')
+
+        update_requirements(self, 'class')
 
         return template.render(
-            data_type=remap_type(ast_node.data_type),
-            key=ast_node.key,
-            expr=self.visit(ast_node.value)
+            struct_name=ast_node.class_name,
+            definitions=ast_node.definitions
         )
 
     def visit_astfunctiondefinition(self, ast_node):

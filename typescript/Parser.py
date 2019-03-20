@@ -8,6 +8,7 @@ from typescript.ast.ASTListType import ASTListType
 from typescript.ast.ASTFunctionDefinition import ASTFunctionDefinition
 from typescript.ast.ASTNumberType import ASTNumberType
 from typescript.ast.ASTStringType import ASTStringType
+from typescript.ast.ASTClassDefinition import ASTClassDefinition
 
 
 def get_method(token_type):
@@ -28,7 +29,12 @@ class Parser(object):
 
     def eat(self, token_type):
         if not self.current_token.token_type == token_type:
-            raise UnexpectedToken(self.current_token.__dict__)
+            raise UnexpectedToken(
+                'expected {} but got {}'.format(
+                    token_type,
+                    self.current_token.__dict__
+                )
+            )
         else:
             self.current_token = self.lexer.get_next_token()
 
@@ -99,6 +105,38 @@ class Parser(object):
         self.eat(TokenType.FUNCTION_TYPE)
         return self.parse_function_definition()
 
+    def parse_definition_list(self):
+        definitions = []
+
+        definition = self.parse_definition()
+
+        if definition:
+            definitions.append(definition)
+
+        while self.current_token.token_type == TokenType.SEMI:
+            self.eat(TokenType.SEMI)
+
+            definition = self.parse_definition() if\
+                self.current_token.token_type != TokenType.RBRACE else None
+
+            if definition:
+                definitions.append(definition)
+
+        return definitions
+
+    def parse_class_definition(self):
+        class_name = self.current_token.value
+        self.eat(TokenType.ID)
+        self.eat(TokenType.LBRACE)
+        definitions = self.parse_definition_list()
+        self.eat(TokenType.RBRACE)
+
+        return ASTClassDefinition(class_name, definitions)
+
+    def parse_class_type(self):
+        self.eat(TokenType.CLASS_TYPE)
+        return self.parse_class_definition()
+
     def parse_variable(self, id_token):
         return ASTVariable(id_token.value)
 
@@ -139,17 +177,21 @@ class Parser(object):
         if self.current_token.token_type == TokenType.LPAREN:
             return self.parse_function_call(id_token)
 
+        if self.current_token.token_type == TokenType.COLON:
+            return self.parse_definition(key=id_token.value)
+
         return self.parse_variable(id_token)
 
-    def parse_definition(self):
+    def parse_definition(self, key=None):
         expr = None
         data_type = None
 
         if self.current_token.token_type == TokenType.LET:
             self.eat(TokenType.LET)
 
-        key = self.current_token.value
-        self.eat(TokenType.ID)
+        if not key:
+            key = self.current_token.value
+            self.eat(TokenType.ID)
 
         if self.current_token.token_type == TokenType.COLON:
             self.eat(TokenType.COLON)

@@ -1,1 +1,3 @@
-{{ data_type }} {{ key }}{% if expr %}={{ expr }}{% endif %}
+{% from 'macros/render_definition.jinja' import render_definition %}
+
+{{ render_definition(definition) }}
