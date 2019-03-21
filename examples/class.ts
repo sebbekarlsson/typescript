@@ -6,5 +6,6 @@ class Person {
 };
 
 function main(argc: number, argv: string[]): number {
+    print("Program started\n");
     let person = new Person();
 }
