@@ -12,7 +12,7 @@ def update_requirements(visitor, keyword):
 
     requirement = _map[keyword] if keyword in _map else None
 
-    if requirement not in visitor.requirements:
+    if requirement not in visitor.requirements and requirement:
         visitor.requirements.append(requirement)
 
     return keyword
@@ -57,7 +57,7 @@ class Visitor(object):
         transpiled_code = self.visit(tree)
         req = ''
         for requirement in self.requirements:
-            req += '#include {}'.format(requirement)
+            req += '#include {}\n'.format(requirement)
 
         return req + '\n\n' + transpiled_code
 

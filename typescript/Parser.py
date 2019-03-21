@@ -49,12 +49,23 @@ class Parser(object):
     def parse_eof(self):
         return None
 
+    def parse_this(self):
+        self.eat(TokenType.THIS)
+        return None
+
+    def parse_new(self):
+        self.eat(TokenType.NEW)
+        id_token = self.current_token
+        self.eat(TokenType.ID)
+        return self.parse_function_call(id_token)
+
     def parse_function_call(self, id_token):
         function_name = id_token.value
         self.eat(TokenType.LPAREN)
         args = []
 
-        expr = self.parse_expr()
+        expr = self.parse_expr()\
+            if self.current_token.token_type != TokenType.RPAREN else None
 
         if expr:
             args.append(expr)
@@ -62,6 +73,9 @@ class Parser(object):
         while self.current_token.token_type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
             expr = self.parse_expr()
+
+            expr = self.parse_expr()\
+                if self.current_token.token_type != TokenType.RPAREN else None
 
             if expr:
                 args.append(expr)
@@ -77,14 +91,17 @@ class Parser(object):
         self.eat(TokenType.LPAREN)
         args = []
 
-        definition = self.parse_definition()
+        definition = self.parse_definition()\
+            if self.current_token.token_type == TokenType.ID else None
 
         if definition:
             args.append(definition)
 
         while self.current_token.token_type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
-            definition = self.parse_definition()
+
+            definition = self.parse_definition()\
+                if self.current_token.token_type == TokenType.ID else None
 
             if definition:
                 args.append(definition)
@@ -108,7 +125,11 @@ class Parser(object):
     def parse_definition_list(self):
         definitions = []
 
-        definition = self.parse_definition()
+        if self.current_token.token_type == TokenType.FUNCTION_TYPE:
+            self.eat(TokenType.FUNCTION_TYPE)
+            definition = self.parse_function_definition()
+        else:
+            definition = self.parse_definition()
 
         if definition:
             definitions.append(definition)
@@ -116,8 +137,12 @@ class Parser(object):
         while self.current_token.token_type == TokenType.SEMI:
             self.eat(TokenType.SEMI)
 
-            definition = self.parse_definition() if\
-                self.current_token.token_type != TokenType.RBRACE else None
+            if self.current_token.token_type == TokenType.FUNCTION_TYPE:
+                self.eat(TokenType.FUNCTION_TYPE)
+                definition = self.parse_function_definition()
+            else:
+                definition = self.parse_definition() if\
+                    self.current_token.token_type != TokenType.RBRACE else None
 
             if definition:
                 definitions.append(definition)
