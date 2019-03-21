@@ -114,7 +114,8 @@ class Visitor(object):
         return template.render(
             struct_name=ast_node.class_name,
             definitions=[self.visit(set_parent(d, ast_node)) for d in ast_node.definitions],
-            allocations=ast_node.definitions
+            allocations=ast_node.definitions,
+            constructor_args=ast_node.constructor_args
         )
 
     def visit_astfunctiondefinition(self, ast_node):
@@ -123,6 +124,10 @@ class Visitor(object):
         ast_node.function_body = self.visit(ast_node.statements)
         ast_node.args = [self.visit(a) for a in ast_node.args]
         ast_node.args_visited = True
+
+        if hasattr(ast_node, 'parent'):
+            if ast_node.function_name == 'constructor':
+                ast_node.parent.constructor_args = ast_node.args
 
         return template.render(definition=ast_node)
 
