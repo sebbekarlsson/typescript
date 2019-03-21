@@ -1,3 +1,5 @@
-{% from 'macros/render_definition.jinja' import render_definition %}
-
-{{ render_definition(definition) }}
+{% if definition.parent %}
+    {{ remap_type(definition.data_type) }} {{ definition.key }};
+{% else %}
+    {{ remap_type(definition.data_type) }} {{ definition.key }}{% if definition.value %}={{ definition.value }}{% endif %}
+{% endif %}

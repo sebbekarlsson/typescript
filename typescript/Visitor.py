@@ -38,15 +38,22 @@ def remap_type(ast_type):
     if classname == 'ASTNumberType':
         return 'int'
 
+    if classname == 'ASTObjectInit':
+        return ast_type.class_name + '*'
+
     return 'void'
 
 
+def set_parent(child, parent):
+    setattr(child, 'parent', parent)
+    return child
+
+
 jinja_env.globals.update(
-    remap_type=remap_type
+    remap_type=remap_type,
+    isinstance=isinstance,
+    str=str
 )
-
-
-
 
 class Visitor(object):
 
@@ -80,8 +87,20 @@ class Visitor(object):
     def visit_str(self, ast_node):
         return '"' + ast_node + '"'
 
+    def visit_astobjectinit(self, ast_node):
+        template = jinja_env.get_template('struct_init.c')
+
+        ast_node.args = [self.visit(a) for a in ast_node.args]
+
+        return template.render(
+            object_init=ast_node
+        )
+
     def visit_astdefinition(self, ast_node):
         template = jinja_env.get_template('definition.c')
+
+        if ast_node.value.__class__.__name__ == 'ASTObjectInit':
+            ast_node.data_type = ast_node.value
 
         ast_node.value = self.visit(ast_node.value)
 
@@ -94,23 +113,17 @@ class Visitor(object):
 
         return template.render(
             struct_name=ast_node.class_name,
-            definitions=ast_node.definitions
+            definitions=[self.visit(set_parent(d, ast_node)) for d in ast_node.definitions]
         )
 
     def visit_astfunctiondefinition(self, ast_node):
-        visited_args = [self.visit(arg) for arg in ast_node.args]
+        template = jinja_env.get_template('function_definition.c')
 
-        template = Template(
-            open('typescript/ctemplates/function_definition.c').read())
+        ast_node.function_body = self.visit(ast_node.statements)
+        ast_node.args = [self.visit(a) for a in ast_node.args]
+        ast_node.args_visited = True
 
-        return template.render(
-            data_type='int' if ast_node.data_type.__class__.__name__ ==
-            'ASTNumberType' else None,
-            function_name=ast_node.function_name,
-            args=visited_args,
-            function_body=self.visit(ast_node.statements)
-        )
-
+        return template.render(definition=ast_node)
 
     def visit_astfunctioncall(self, ast_node):
         visited_args = [self.visit(arg) for arg in ast_node.args]

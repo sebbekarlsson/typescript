@@ -9,6 +9,7 @@ from typescript.ast.ASTFunctionDefinition import ASTFunctionDefinition
 from typescript.ast.ASTNumberType import ASTNumberType
 from typescript.ast.ASTStringType import ASTStringType
 from typescript.ast.ASTClassDefinition import ASTClassDefinition
+from typescript.ast.ASTObjectInit import ASTObjectInit
 
 
 def get_method(token_type):
@@ -53,11 +54,36 @@ class Parser(object):
         self.eat(TokenType.THIS)
         return None
 
-    def parse_new(self):
+    def parse_object_init(self):
         self.eat(TokenType.NEW)
         id_token = self.current_token
         self.eat(TokenType.ID)
-        return self.parse_function_call(id_token)
+
+        self.eat(TokenType.LPAREN)
+        args = []
+
+        expr = self.parse_expr()\
+            if self.current_token.token_type != TokenType.RPAREN else None
+
+        if expr:
+            args.append(expr)
+
+        while self.current_token.token_type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            expr = self.parse_expr()
+
+            expr = self.parse_expr()\
+                if self.current_token.token_type != TokenType.RPAREN else None
+
+            if expr:
+                args.append(expr)
+
+        self.eat(TokenType.RPAREN)
+
+        return ASTObjectInit(id_token.value, args)
+
+    def parse_new(self):
+        return self.parse_object_init()
 
     def parse_function_call(self, id_token):
         function_name = id_token.value

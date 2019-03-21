@@ -1,3 +1,7 @@
-{{ data_type or 'void' }} {{ function_name }} ({% for arg in args %}{{ arg }}{% if loop.index < args | length %},{% endif %}{% endfor %}) {
-    {{ function_body }}                   
-}
+{% if not definition.parent %}
+{{ remap_type(definition.data_type) }} {{ definition.function_name }} ({% for arg in definition.args %}{{ render_definition(arg) if not definition.args_visited else arg }}{% if loop.index < definition.args | length %},{% endif %}{% endfor %}) {
+        {{ definition.function_body }}                   
+    }
+{% else %}
+    int (*length)({% for arg in definition.args %}{{ render_definition(arg) if not definition.args_visited else arg }}{% if loop.index < definition.args | length %},{% endif %}{% endfor %});
+{% endif %}

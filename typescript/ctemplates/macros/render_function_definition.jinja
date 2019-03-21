@@ -1,8 +1,0 @@
-{% from 'macros/render_definition.jinja' import render_definition %}
-
-
-{% macro render_function_definition(definition, prefix='') %}
-    {{ remap_type(definition.data_type) or 'void' }} {{ prefix + definition.function_name }} ({% for arg in definition.args %}{{ render_definition(arg) }}{% if loop.index < args | length %},{% endif %}{% endfor %}) {
-        {{ definition.function_body }}                   
-    }
-{% endmacro %}

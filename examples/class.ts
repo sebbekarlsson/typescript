@@ -1,11 +1,10 @@
-class Greeter {
-    greeting: string;
-
-    function greet(times:number): void {
-        print("hello");
-    }
+class Person {
+    message: string;
+    function say(message: string): void {
+        print(message);
+    };
 };
 
 function main(argc: number, argv: string[]): number {
-    print("Hello");
+    let person = new Person();
 }
