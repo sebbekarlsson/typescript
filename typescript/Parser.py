@@ -13,6 +13,7 @@ from typescript.ast.ASTObjectInit import ASTObjectInit
 from typescript.ast.ASTAttributeAccess import ASTAttributeAccess
 from typescript.ast.ASTThis import ASTThis
 from typescript.ast.ASTIf import ASTIf
+from typescript.ast.ASTArray import ASTArray
 
 
 def get_method(token_type):
@@ -228,6 +229,29 @@ class Parser(object):
 
         return data_type
 
+    def parse_lbracket(self):
+        self.eat(TokenType.LBRACKET)
+        args = []
+
+        expr = self.parse_expr()\
+            if self.current_token.token_type != TokenType.RPAREN else None
+
+        if expr:
+            args.append(expr)
+
+        while self.current_token.token_type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+
+            expr = self.parse_expr()\
+                if self.current_token.token_type != TokenType.RPAREN else None
+
+            if expr:
+                args.append(expr)
+
+        self.eat(TokenType.RBRACKET)
+
+        return ASTArray(args)
+
     def parse_id(self):
         if self.current_token.token_type == TokenType.ID:
             id_token = self.current_token
@@ -242,6 +266,9 @@ class Parser(object):
             return self.parse_definition(key=id_token.value)
 
         node = self.parse_variable(id_token)
+
+        if self.current_token.token_type == TokenType.EQUALS:
+            return self.parse_definition(node)
 
         if self.current_token.token_type == TokenType.DOT:
             return self.parse_attribute_access(node)
@@ -272,9 +299,7 @@ class Parser(object):
     def parse_statement(self):
         if self.current_token.token_type in [
             TokenType.LBRACE,
-            TokenType.RBRACE,
-            TokenType.LBRACKET,
-            TokenType.RBRACKET
+            TokenType.RBRACE
         ]:
             return
 

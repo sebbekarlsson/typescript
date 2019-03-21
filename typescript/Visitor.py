@@ -91,6 +91,13 @@ class Visitor(object):
     def visit_str(self, ast_node):
         return '"' + ast_node + '"'
 
+    def visit_astarray(self, ast_node):
+        template = jinja_env.get_template('array.c')
+
+        return template.render(
+            items=[self.visit(item) for item in ast_node.items]
+        )
+
     def visit_astif(self, ast_node):
         template = jinja_env.get_template('if.c')
         expr = self.visit(ast_node.expr)
