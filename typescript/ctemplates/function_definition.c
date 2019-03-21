@@ -6,5 +6,5 @@
         {{ definition.function_body }}                   
     }
 {% else %}
-    {{ remap_type(definition.data_type) }} (*{{ definition.function_name }})({{ 'void' }}* self{% if definition.args %},{% endif %}{{ render_arguments(definition.args) }});
+    {{ remap_type(definition.data_type) }} (*{{ definition.function_name }})({{ 'void' }}* self{% if definition.args %},{% endif %}{{ render_arguments(definition.args) }})
 {% endif %}

@@ -81,7 +81,6 @@ class Parser(object):
 
         while self.current_token.token_type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
-            expr = self.parse_expr()
 
             expr = self.parse_expr()\
                 if self.current_token.token_type != TokenType.RPAREN else None
@@ -109,7 +108,6 @@ class Parser(object):
 
         while self.current_token.token_type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
-            expr = self.parse_expr()
 
             expr = self.parse_expr()\
                 if self.current_token.token_type != TokenType.RPAREN else None

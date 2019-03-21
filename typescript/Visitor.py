@@ -92,22 +92,31 @@ class Visitor(object):
 
         ast_node.args = [self.visit(a) for a in ast_node.args]
 
+        if hasattr(ast_node, 'backref'):
+            backref = ast_node.backref
+
         return template.render(
-            object_init=ast_node
+            object_init=ast_node,
+            backref=backref
         )
 
     def visit_astdefinition(self, ast_node):
         template = jinja_env.get_template('definition.c')
 
+        render_data_type = True
+
         if ast_node.value.__class__.__name__ == 'ASTObjectInit':
             ast_node.data_type = ast_node.value
+            ast_node.value.backref = ast_node
 
         ast_node.value = self.visit(ast_node.value)
 
         if not isinstance(ast_node.key, basestring):
+            render_data_type = False
             ast_node.key = self.visit(ast_node.key)
 
-        return template.render(definition=ast_node)
+        return template.render(
+            definition=ast_node, render_data_type=render_data_type)
 
     def visit_astclassdefinition(self, ast_node):
         template = jinja_env.get_template('struct_definition.c')
@@ -137,11 +146,17 @@ class Visitor(object):
     def visit_astfunctioncall(self, ast_node):
         visited_args = [self.visit(arg) for arg in ast_node.args]
 
+        backref = None
+
         template = Template(
             open('typescript/ctemplates/function_call.c').read())
 
+        if hasattr(ast_node, 'backref'):
+            backref = self.visit(ast_node.backref)
+
         return template.render(
             function_name=remap_function(self, ast_node.function_name),
+            backref=backref,
             args=visited_args
         )
 
@@ -155,6 +170,7 @@ class Visitor(object):
         return 'self'
 
     def visit_astattributeaccess(self, ast_node):
+        ast_node.ast_node.backref = ast_node.key
         key = self.visit(ast_node.key)
         child = self.visit(ast_node.ast_node)
 
