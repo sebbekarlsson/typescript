@@ -1,7 +1,10 @@
+{% from 'macros/render_arguments.jinja' import render_arguments %}
+
+
 {% if not definition.parent %}
-{{ remap_type(definition.data_type) }} {{ definition.function_name }} ({% for arg in definition.args %}{{ render_definition(arg) if not definition.args_visited else arg }}{% if loop.index < definition.args | length %},{% endif %}{% endfor %}) {
+{{ remap_type(definition.data_type) }} {{ definition.function_name }} ({{ render_arguments(definition.args) }}) {
         {{ definition.function_body }}                   
     }
 {% else %}
-    {{ remap_type(definition.data_type) }} (*{{ definition.function_name }})({% for arg in definition.args %}{{ render_definition(arg) if not definition.args_visited else arg }}{% if loop.index < definition.args | length %},{% endif %}{% endfor %});
+    {{ remap_type(definition.data_type) }} (*{{ definition.function_name }})({{ 'void' }}* self{% if definition.args %},{% endif %}{{ render_arguments(definition.args) }});
 {% endif %}

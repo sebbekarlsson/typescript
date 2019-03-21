@@ -10,6 +10,8 @@ from typescript.ast.ASTNumberType import ASTNumberType
 from typescript.ast.ASTStringType import ASTStringType
 from typescript.ast.ASTClassDefinition import ASTClassDefinition
 from typescript.ast.ASTObjectInit import ASTObjectInit
+from typescript.ast.ASTAttributeAccess import ASTAttributeAccess
+from typescript.ast.ASTThis import ASTThis
 
 
 def get_method(token_type):
@@ -50,9 +52,18 @@ class Parser(object):
     def parse_eof(self):
         return None
 
+    def parse_attribute_access(self, id_token):
+        self.eat(TokenType.DOT)
+        access = ASTAttributeAccess(id_token, self.parse_id())
+
+        if self.current_token.token_type == TokenType.EQUALS:
+            return self.parse_definition(key=access)
+
+        return access
+
     def parse_this(self):
         self.eat(TokenType.THIS)
-        return None
+        return self.parse_attribute_access(ASTThis())
 
     def parse_object_init(self):
         self.eat(TokenType.NEW)
@@ -231,7 +242,12 @@ class Parser(object):
         if self.current_token.token_type == TokenType.COLON:
             return self.parse_definition(key=id_token.value)
 
-        return self.parse_variable(id_token)
+        node = self.parse_variable(id_token)
+
+        if self.current_token.token_type == TokenType.DOT:
+            return self.parse_attribute_access(node)
+
+        return node
 
     def parse_definition(self, key=None):
         expr = None

@@ -104,6 +104,9 @@ class Visitor(object):
 
         ast_node.value = self.visit(ast_node.value)
 
+        if not isinstance(ast_node.key, basestring):
+            ast_node.key = self.visit(ast_node.key)
+
         return template.render(definition=ast_node)
 
     def visit_astclassdefinition(self, ast_node):
@@ -147,3 +150,14 @@ class Visitor(object):
 
     def visit_nonetype(self, ast_node):
         return None
+
+    def visit_astthis(self, ast_node):
+        return 'self'
+
+    def visit_astattributeaccess(self, ast_node):
+        key = self.visit(ast_node.key)
+        child = self.visit(ast_node.ast_node)
+
+        template = jinja_env.get_template('attribute_access.c')
+
+        return template.render(key=key, child=child)
