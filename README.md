@@ -1,6 +1,17 @@
 # typescript to c compiler
 > Converts typescript to C.
 
+## Usage
+> First install:
+
+    python setup.py install
+
+> Then you can use it like this:
+
+    typescript <filename>.ts
+
+> This will generate a `main.c` file.
+
 ## Example
 ### Input
 > When given this typescript snippet:

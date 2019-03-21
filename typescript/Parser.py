@@ -12,6 +12,7 @@ from typescript.ast.ASTClassDefinition import ASTClassDefinition
 from typescript.ast.ASTObjectInit import ASTObjectInit
 from typescript.ast.ASTAttributeAccess import ASTAttributeAccess
 from typescript.ast.ASTThis import ASTThis
+from typescript.ast.ASTIf import ASTIf
 
 
 def get_method(token_type):
@@ -299,3 +300,23 @@ class Parser(object):
                 statements.append(statement)
 
         return ASTStatementList(statements)
+
+    def parse_if(self):
+        otherwise = None
+        expr = None
+
+        if self.current_token.token_type == TokenType.IF:
+            self.eat(TokenType.IF)
+            self.eat(TokenType.LPAREN)
+            expr = self.parse_expr()
+            self.eat(TokenType.RPAREN)
+
+        self.eat(TokenType.LBRACE)
+        statementlist = self.parse_statement_list()
+        self.eat(TokenType.RBRACE)
+
+        if self.current_token.token_type == TokenType.ELSE:
+            self.eat(TokenType.ELSE)
+            otherwise = self.parse_if()
+
+        return ASTIf(expr, otherwise, statementlist)

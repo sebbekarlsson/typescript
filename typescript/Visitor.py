@@ -23,7 +23,10 @@ def remap_function(visitor, function_name):
         'print': 'printf'
     }
 
-    return update_requirements(visitor, _map[function_name] if function_name in _map else function_name)
+    return update_requirements(
+        visitor, _map[function_name]
+        if function_name in _map else function_name
+    )
 
 
 def remap_type(ast_type):
@@ -54,6 +57,7 @@ jinja_env.globals.update(
     isinstance=isinstance,
     str=str
 )
+
 
 class Visitor(object):
 
@@ -86,6 +90,16 @@ class Visitor(object):
 
     def visit_str(self, ast_node):
         return '"' + ast_node + '"'
+
+    def visit_astif(self, ast_node):
+        template = jinja_env.get_template('if.c')
+        expr = self.visit(ast_node.expr)
+        body = self.visit(ast_node.statementlist)
+
+        otherwise = self.visit(ast_node.otherwise)\
+            if ast_node.otherwise else None
+
+        return template.render(expr=expr, body=body, otherwise=otherwise)
 
     def visit_astobjectinit(self, ast_node):
         template = jinja_env.get_template('struct_init.c')
@@ -125,7 +139,10 @@ class Visitor(object):
 
         return template.render(
             struct_name=ast_node.class_name,
-            definitions=[self.visit(set_parent(d, ast_node)) for d in ast_node.definitions],
+            definitions=[
+                self.visit(set_parent(d, ast_node))
+                for d in ast_node.definitions
+            ],
             allocations=ast_node.definitions,
             constructor_args=ast_node.constructor_args
         )
