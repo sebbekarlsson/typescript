@@ -111,6 +111,8 @@ class Visitor(object):
     def visit_astobjectinit(self, ast_node):
         template = jinja_env.get_template('struct_init.c')
 
+        backref = None
+
         ast_node.args = [self.visit(a) for a in ast_node.args]
 
         if hasattr(ast_node, 'backref'):

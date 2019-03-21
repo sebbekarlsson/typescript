@@ -25,7 +25,7 @@ class Cat {
 function main(argc: number, argv: string[]): number {
     let dog = new Dog();
     dog.say();
-    
+
     if (1) {
         let cat = new Cat();
         cat.say();
