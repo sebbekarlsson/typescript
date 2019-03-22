@@ -14,6 +14,9 @@ from typescript.ast.ASTAttributeAccess import ASTAttributeAccess
 from typescript.ast.ASTThis import ASTThis
 from typescript.ast.ASTIf import ASTIf
 from typescript.ast.ASTArray import ASTArray
+from typescript.ast.ASTWhile import ASTWhile
+from typescript.ast.ASTInterface import ASTInterface
+from typescript.ast.ASTBinOp import ASTBinOp
 
 
 def get_method(token_type):
@@ -43,8 +46,52 @@ class Parser(object):
         else:
             self.current_token = self.lexer.get_next_token()
 
+    def parse_factor(self):
+        if self.current_token.token_type == TokenType.ID:
+            return self.parse_id()
+        if self.current_token.token_type == TokenType.CLASS_TYPE:
+            return self.parse_class_type()
+        if self.current_token.token_type == TokenType.STRING_VALUE:
+            return self.parse_string_value()
+        if self.current_token.token_type == TokenType.THIS:
+            return self.parse_this()
+        if self.current_token.token_type == TokenType.NEW:
+            return self.parse_new()
+        if self.current_token.token_type == TokenType.LPAREN:
+            self.eat(TokenType.LPAREN)
+            node = self.parse_expr()
+            self.eat(TokenType.RPAREN)
+            return node
+        return self.parse_expr()
+
+    def parse_term(self):
+        node = self.parse_factor()
+        return node
+
     def parse_expr(self):
-        return self.parse_statement()
+        node = self.parse_term()
+
+        while self.current_token.token_type in [
+            TokenType.PLUS,
+            TokenType.SUBTRACT,
+            TokenType.MULTIPLY,
+            TokenType.DIVIDE
+        ]:
+            operator = self.current_token
+
+            if self.current_token.token_type == TokenType.PLUS:
+                self.eat(TokenType.PLUS)
+            elif self.current_token.token_type == TokenType.SUBTRACT:
+                self.eat(TokenType.SUBTRACT)
+            elif self.current_token.token_type == TokenType.MULTIPLY:
+                self.eat(TokenType.MULTIPLY)
+            elif self.current_token.token_type == TokenType.DIVIDE:
+                self.eat(TokenType.DIVIDE)
+
+            node = ASTBinOp(operator, node, self.parse_term())
+
+        return node
+        #return self.parse_statement()
 
     def parse_string_value(self):
         value = self.current_token.value
@@ -303,6 +350,9 @@ class Parser(object):
         ]:
             return
 
+        if self.current_token.token_type in [TokenType.ID]:
+            return self.parse_expr()
+
         return getattr(
             self,
             get_method(self.current_token.token_type)
@@ -345,3 +395,30 @@ class Parser(object):
             otherwise = self.parse_if()
 
         return ASTIf(expr, otherwise, statementlist)
+
+    def parse_while(self):
+        self.eat(TokenType.WHILE)
+        self.eat(TokenType.LPAREN)
+        expr = self.parse_expr()
+        self.eat(TokenType.RPAREN)
+        self.eat(TokenType.LBRACE)
+        body = self.parse_statement_list()
+        self.eat(TokenType.RBRACE)
+
+        return ASTWhile(expr, body)
+
+    def parse_interface_type(self):
+        self.eat(TokenType.INTERFACE_TYPE)
+        interface_name = self.current_token.value
+        self.eat(TokenType.ID)
+        self.eat(TokenType.LBRACE)
+        definition_list = self.parse_definition_list()
+        self.eat(TokenType.RBRACE)
+
+        return ASTInterface(interface_name, definition_list)
+
+    def parse_lparen(self):
+        self.eat(TokenType.LPAREN)
+        expr = self.parse_expr()
+        self.eat(TokenType.RPAREN)
+        return expr

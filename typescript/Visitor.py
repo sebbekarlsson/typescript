@@ -63,12 +63,26 @@ class Visitor(object):
 
     def __init__(self):
         self.requirements = []
+        self.bootstraps = {}
 
     def transpile(self, tree):
         transpiled_code = self.visit(tree)
+
+        if 'console.c' in self.bootstraps.keys():
+            if '<stdlib.h>' not in self.requirements:
+                self.requirements.append('<stdlib.h>')
+            if '<stdio.h>' not in self.requirements:
+                self.requirements.append('<stdio.h>')
+
         req = ''
         for requirement in self.requirements:
             req += '#include {}\n'.format(requirement)
+
+        for k, v in self.bootstraps.items():
+            req += v + '\n'
+
+        if self.bootstraps:
+            req += open('typescript/cbootstrap/bootstrap_init.c').read() + '\n'
 
         return req + '\n\n' + transpiled_code
 
@@ -107,6 +121,13 @@ class Visitor(object):
             if ast_node.otherwise else None
 
         return template.render(expr=expr, body=body, otherwise=otherwise)
+
+    def visit_astwhile(self, ast_node):
+        template = jinja_env.get_template('while.c')
+        expr = self.visit(ast_node.expr)
+        body = self.visit(ast_node.body)
+
+        return template.render(expr=expr, body=body)
 
     def visit_astobjectinit(self, ast_node):
         template = jinja_env.get_template('struct_init.c')
@@ -198,8 +219,34 @@ class Visitor(object):
     def visit_astattributeaccess(self, ast_node):
         ast_node.ast_node.backref = ast_node.key
         key = self.visit(ast_node.key)
+
+        if key == 'console':
+            if 'console.c' not in self.bootstraps:
+                self.bootstraps['console.c'] =\
+                    open('typescript/cbootstrap/console.c').read()
+
         child = self.visit(ast_node.ast_node)
 
         template = jinja_env.get_template('attribute_access.c')
 
         return template.render(key=key, child=child)
+
+    def visit_astinterface(self, ast_node):
+        template = jinja_env.get_template('interface.c')
+
+        return template.render(
+            interface_name=ast_node.interface_name,
+            definitions=[self.visit(d) for d in ast_node.definition_list]
+        )
+
+    def visit_astbinop(self, ast_node):
+        template = jinja_env.get_template('binop.c')
+
+        operator = self.visit(ast_node.operator)
+        left = self.visit(ast_node.left)
+        right = self.visit(ast_node.right)
+
+        return template.render(operator=operator, left=left, right=right)
+
+    def visit_token(self, token):
+        return token.value

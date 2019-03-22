@@ -1,0 +1,1 @@
+({{ left }} {{ operator }} {{ right }})

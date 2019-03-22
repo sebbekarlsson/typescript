@@ -12,9 +12,13 @@
 - [x] String type
 - [x] Number type
 - [ ] String lists (not working as expected, but does work in some cases D:)
-- [ ] Number lists
-- [ ] Mathematical expressions (TODO)
-- [ ] While loops (TODO)
+- [ ] Number lists (TODO)
+- [x] Addition (math)
+- [x] Subtraction (math)
+- [x] Multiplication (math)
+- [x] Division (math)
+- [x] While loops
+- [x] Interfaces
 - [ ] For loops (TODO)
 
 > ... I probably missed something here

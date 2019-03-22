@@ -33,8 +33,13 @@ token_map = {
     'EOF': '\0',
     'ID': 'ID',
     'EQUALS': '=',
-    "QUOTE": '"',
-    "CLASS_TYPE": 'class'
+    'QUOTE': '"',
+    'CLASS_TYPE': 'class',
+    'INTERFACE_TYPE': 'interface',
+    'PLUS': '+',
+    'SUBTRACT': '-',
+    'MULTIPLY': '*',
+    'DIVIDE': '/'
 }
 
 

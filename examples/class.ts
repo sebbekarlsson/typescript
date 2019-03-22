@@ -2,11 +2,11 @@ class Dog {
     message: string;
     
     function constructor(): void {
-        this.message = "Bark Bark\n"; 
+        this.message = "Bark Bark"; 
     };
 
     function say(): void {
-        print(this.message);
+        console.log(this.message);
     };
 };
 
@@ -14,11 +14,19 @@ class Cat {
     message: string;
 
     function constructor(): void {
-        this.message = "Mew Mew\n";
+        this.message = "Mew Mew";
     };
 
     function say(): void {
-        print(this.message);
+        console.log(this.message);
+    };
+};
+
+class Human {
+    age: number;
+
+    function constructor(age: number): void {
+        this.age = age;
     };
 };
 
@@ -30,6 +38,9 @@ function main(argc: number, argv: string[]): number {
         let cat = new Cat();
         cat.say();
     } else {
-        print("Nope\n");
-    }
+        console.log("Nope");
+    };
+
+    let human = new Human(21);
+    human.age = human.age + 14;
 }
