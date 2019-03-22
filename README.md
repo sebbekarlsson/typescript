@@ -11,7 +11,7 @@
 - [x] functions
 - [x] String type
 - [x] Number type
-- [/] String lists (not working as expected)
+- [ ] String lists (not working as expected, but does work in some cases D:)
 - [ ] Number lists
 - [ ] Mathematical expressions (TODO)
 - [ ] While loops (TODO)
