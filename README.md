@@ -1,6 +1,24 @@
 # typescript to c compiler
 > Converts typescript to C.
 
+## Features
+
+- [x] Automatically detect requirements and inject `#include` tags
+- [x] If - else statements
+- [x] Classes
+- [x] Class member functions
+- [x] Class member variables
+- [x] functions
+- [x] String type
+- [x] Number type
+- [/] String lists (not working as expected)
+- [ ] Number lists
+- [ ] Mathematical expressions (TODO)
+- [ ] While loops (TODO)
+- [ ] For loops (TODO)
+
+> ... I probably missed something here
+
 ## Usage
 > First install:
 
