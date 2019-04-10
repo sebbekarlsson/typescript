@@ -1,6 +1,9 @@
 # typescript to c compiler
 > Converts typescript to C.
 
+# THIS PROJECT IS NO LONGER MAINTAINED
+> It is being rewritten in C [https://github.com/sebbekarlsson/tscc](https://github.com/sebbekarlsson/tscc)
+
 ## Features
 
 - [x] Automatically detect requirements and inject `#include` tags
